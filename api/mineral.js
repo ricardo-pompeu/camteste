@@ -46,12 +46,9 @@ Dureza: ${dureza || "não informada"}
 
 Responda exatamente neste formato:
 
-# Mineral mais provável
+# Os 3 Minerais mais prováveis com
 
 Nome:
-
-Confiança:
-(valor entre 0 e 100%)
 
 Descrição:
 
