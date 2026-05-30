@@ -6,7 +6,13 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { imagem } = req.body;
+
+    const {
+      imagem,
+      cor,
+      brilho,
+      dureza
+    } = req.body;
 
     if (!imagem) {
       return res.status(400).json({
@@ -14,17 +20,10 @@ export default async function handler(req, res) {
       });
     }
 
-    const controller = new AbortController();
-
-    const timeout = setTimeout(() => {
-      controller.abort();
-    }, 30000);
-
     const respostaGemini = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         method: "POST",
-        signal: controller.signal,
         headers: {
           "Content-Type": "application/json"
         },
@@ -35,31 +34,42 @@ export default async function handler(req, res) {
               parts: [
                 {
                   text: `
-Você é um especialista em Mineralogia.
+Você é um geólogo e mineralogista.
 
-Analise a fotografia enviada e responda SOMENTE no seguinte formato:
+Analise a fotografia enviada.
 
-Mineral mais provável:
-Confiança (%):
+Dados fornecidos pelo usuário:
 
-Características observadas:
-- cor
-- brilho
-- hábito cristalino
-- textura
+Cor: ${cor || "não informada"}
+Brilho: ${brilho || "não informado"}
+Dureza: ${dureza || "não informada"}
+
+Responda exatamente neste formato:
+
+# Mineral mais provável
+
+Nome:
+
+Confiança:
+(valor entre 0 e 100%)
+
+Descrição:
+
+Propriedades observadas:
+- Cor
+- Brilho
+- Hábito cristalino
+- Transparência
 
 Minerais semelhantes:
-- item 1
-- item 2
+- item
+- item
 
-Explicação:
-(descreva por que acredita ser esse mineral)
+Conclusão:
 
 Importante:
-- Não invente informações.
-- Caso a imagem seja insuficiente, diga claramente.
-- Informe que a confirmação exige testes físicos e laboratoriais.
-                  `
+A identificação visual possui limitações e pode exigir testes laboratoriais.
+`
                 },
                 {
                   inline_data: {
@@ -78,15 +88,13 @@ Importante:
       }
     );
 
-    clearTimeout(timeout);
-
     const json = await respostaGemini.json();
 
     if (!respostaGemini.ok) {
       console.error(json);
 
       return res.status(500).json({
-        resposta: "Erro ao consultar o Gemini."
+        resposta: "Erro ao consultar Gemini."
       });
     }
 
@@ -101,6 +109,7 @@ Importante:
     });
 
   } catch (erro) {
+
     console.error(erro);
 
     return res.status(500).json({
