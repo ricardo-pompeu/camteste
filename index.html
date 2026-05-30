@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Identificador de Minerais</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    background:#f5f7fa;
+    padding:30px;
+}
+
+.container{
+    max-width:800px;
+    margin:auto;
+    background:#fff;
+    padding:25px;
+    border-radius:12px;
+    box-shadow:0 4px 12px rgba(0,0,0,.1);
+}
+
+h1{
+    margin-bottom:20px;
+    text-align:center;
+}
+
+.upload-area{
+    border:2px dashed #999;
+    padding:20px;
+    text-align:center;
+    border-radius:10px;
+    margin-bottom:20px;
+}
+
+input[type=file]{
+    width:100%;
+}
+
+#preview{
+    width:100%;
+    max-height:450px;
+    object-fit:contain;
+    display:none;
+    margin-top:15px;
+    border-radius:10px;
+}
+
+.campos{
+    display:grid;
+    gap:10px;
+    margin-top:20px;
+}
+
+input,
+select,
+button{
+    padding:12px;
+    border-radius:8px;
+    border:1px solid #ccc;
+    font-size:15px;
+}
+
+button{
+    background:#0066cc;
+    color:white;
+    border:none;
+    cursor:pointer;
+}
+
+button:hover{
+    opacity:.9;
+}
+
+#resultado{
+    margin-top:25px;
+    padding:20px;
+    background:#f8f8f8;
+    border-radius:10px;
+    white-space:pre-wrap;
+    line-height:1.6;
+    min-height:120px;
+}
+
+.loading{
+    animation:pulse 1s infinite;
+}
+
+@keyframes pulse{
+    0%{opacity:.5;}
+    50%{opacity:1;}
+    100%{opacity:.5;}
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+    <h1>🔬 Identificação de Minerais</h1>
+
+    <div class="upload-area">
+
+        <input
+            type="file"
+            id="fotoMineral"
+            accept="image/*"
+            capture="environment"
+        >
+
+        <img id="preview">
+
+    </div>
+
+    <div class="campos">
+
+        <input
+            type="text"
+            id="cor"
+            placeholder="Cor observada (opcional)"
+        >
+
+        <select id="brilho">
+            <option>Não informado</option>
+            <option>Vítreo</option>
+            <option>Metálico</option>
+            <option>Resinoso</option>
+            <option>Sedoso</option>
+            <option>Perolado</option>
+            <option>Adamantino</option>
+        </select>
+
+        <input
+            type="text"
+            id="dureza"
+            placeholder="Dureza Mohs estimada (opcional)"
+        >
+
+        <button id="analisar">
+            Identificar Mineral
+        </button>
+
+    </div>
+
+    <div id="resultado">
+Envie uma foto para iniciar a análise.
+    </div>
+
+</div>
+
+<script>
+const inputFoto = document.getElementById("fotoMineral");
+const preview = document.getElementById("preview");
+const resultado = document.getElementById("resultado");
+
+let imagemBase64 = null;
+
+inputFoto.addEventListener("change", () => {
+
+    const arquivo = inputFoto.files[0];
+
+    if (!arquivo) return;
+
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+
+        preview.src = e.target.result;
+        preview.style.display = "block";
+
+        imagemBase64 = e.target.result.split(",")[1];
+    };
+
+    reader.readAsDataURL(arquivo);
+});
+
+document
+.getElementById("analisar")
+.addEventListener("click", async () => {
+
+    if (!imagemBase64) {
+
+        alert("Selecione uma imagem.");
+        return;
+    }
+
+    const cor =
+        document.getElementById("cor").value;
+
+    const brilho =
+        document.getElementById("brilho").value;
+
+    const dureza =
+        document.getElementById("dureza").value;
+
+    resultado.classList.add("loading");
+    resultado.textContent =
+        "🔎 Analisando mineral...";
+
+    try {
+
+        const resposta = await fetch(
+            "/api/mineral",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type":
+                    "application/json"
+                },
+                body: JSON.stringify({
+                    imagem: imagemBase64,
+                    cor,
+                    brilho,
+                    dureza
+                })
+            }
+        );
+
+        const dados = await resposta.json();
+
+        resultado.classList.remove("loading");
+
+        resultado.textContent =
+            dados.resposta ||
+            "Nenhuma resposta recebida.";
+
+    } catch (erro) {
+
+        console.error(erro);
+
+        resultado.classList.remove("loading");
+
+        resultado.textContent =
+            "Erro ao comunicar com o servidor.";
+    }
+});
+</script>
+
+</body>
+</html>
