@@ -34,38 +34,34 @@ export default async function handler(req, res) {
               parts: [
                 {
                   text: `
-Você é um geólogo e mineralogista.
+Você é um geólogo e mineralogista especialista.
 
-Analise a fotografia enviada.
+Analise cuidadosamente a imagem enviada.
 
-Dados fornecidos pelo usuário:
+A identificação visual de minerais possui limitações.
+Por isso NÃO retorne apenas uma hipótese.
 
-Cor: ${cor || "não informada"}
-Brilho: ${brilho || "não informado"}
-Dureza: ${dureza || "não informada"}
+Retorne os 3 minerais mais prováveis em ordem de confiança.
 
-Responda exatamente neste formato:
+Para cada mineral informe:
 
-# Os 3 Minerais mais prováveis com
-
-Nome:
-
-Descrição:
-
-Propriedades observadas:
-- Cor
+- Nome
+- Confiança (%)
+- Descrição detalhada
+- Características visuais observadas
+- Composição química
+- Sistema cristalino
+- Dureza Mohs
 - Brilho
-- Hábito cristalino
-- Transparência
+- Cor típica
+- Motivos pelos quais a imagem sugere este mineral
 
-Minerais semelhantes:
-- item
-- item
+Ao final informe:
 
-Conclusão:
+- Principais fatores de incerteza
+- Quais testes físicos ajudariam a confirmar a identificação
 
-Importante:
-A identificação visual possui limitações e pode exigir testes laboratoriais.
+Responda em Markdown.
 `
                 },
                 {
